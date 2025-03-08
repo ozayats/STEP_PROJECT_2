@@ -1,0 +1,40 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+Vagrant.configure("2") do |config|
+
+    config.vm.provision "shell", inline: <<-SHELL
+       cat /vagrant/vagrant_data/id_ed25519.pub >> /home/vagrant/.ssh/authorized_keys
+       sudo apt update
+       sudo apt upgrade -y
+    SHELL
+
+  # Jenkins master VM
+    config.vm.define "jenkins_master_vm" do |master|
+    master.vm.box = "ubuntu/jammy64"
+    master.vm.network "public_network", bridge: "en0: Wi-Fi", ip: "192.168.0.182"
+    #master.vm.network "public_network", bridge: 'en0: Wi-Fi', :adapter=>2, type: "dhcp"
+    #master.vm.network "public_network", ip: "192.168.0.239"
+    master.vm.hostname = "master"
+    master.vm.provider "virtualbox" do |vb|
+      vb.name = "jenkins_master_vm"
+      vb.memory = "2048"
+      vb.cpus = 4
+    end
+  end
+
+  # Jenkins slave VM
+    config.vm.define "jenkins_slave_vm" do |slave|
+    slave.vm.box = "ubuntu/jammy64"
+    #slave.vm.network "public_network", ip: "192.168.0.238"
+    #slave.vm.network "public_network", bridge: 'en0: Wi-Fi', :adapter=>2, type: "dhcp"    
+    slave.vm.network "public_network", bridge: "en0: Wi-Fi", ip: "192.168.0.181"
+    slave.vm.hostname = "slave"
+    slave.vm.provider "virtualbox" do |vb|
+      vb.name = "jenkins_slave_vm"
+      vb.memory = "2048"
+      vb.cpus = 2
+    end
+  end
+end
